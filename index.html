@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RMIT Student Links</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ical.js/1.3.2/ical.min.js"></script> <!-- Include ICAL.js -->
+</head>
+
+<body>
+    <div class="container">
+        <h1>RMIT Student Links</h1>
+        <p><small>This is an unofficial site created by students for students.</small></p>
+        <div class="links">
+            <a href="https://www.rmit.edu.au" target="_blank">RMIT Homepage</a>
+            <a href="https://canvas.rmit.edu.au" target="_blank">Canvas</a>
+            <a href="https://www.rmit.edu.au/library" target="_blank">Library</a>
+            <a href="https://www.rmit.edu.au/students" target="_blank">RMIT Student Section</a>
+            <a href="https://mytimetable.rmit.edu.au/odd/student?_gl=1*udw8i0*_gcl_au*MTIwOTIzMzI5Ny4xNzM1ODAxMjg2" target="_blank">Timetable</a>
+        </div>
+    </div>
+    <div id="flex-container">
+        <div>
+            <aside class="sidebar">
+                <h2>Useful Services</h2>
+                <div class="sidebar-links">
+                    <a href="https://outlook.office.com" target="_blank">
+                        <img src="https://cdn-icons-png.flaticon.com/512/732/732223.png" alt="Outlook"> Outlook
+                    </a>
+                    <a href="https://www.office.com/" target="_blank">
+                        <img src="https://img.icons8.com/?size=512&id=37619&format=png" alt="Office 365"> Office 365
+                    </a>
+                    <a href="https://www.autodesk.com/education/edu-software/overview" target="_blank">
+                        <img src="https://brand.autodesk.com/app/uploads/2021/04/symbol-1.svg" alt="Autodesk"> Autodesk
+                    </a>
+                    <a href="https://www.adobe.com/au/" target="_blank">
+                        <img src="https://companieslogo.com/img/orig/ADBE-fb158b30.png?t=1720244490" alt="Adobe"> Adobe
+                    </a>
+                </div>
+            </aside>
+        </div>
+
+        <div>
+            <aside class="sidebar">
+                <h2>Career</h2>
+                <div class="sidebar-links">
+                    <a href="https://au.linkedin.com/" target="_blank">
+                        <img src="https://play-lh.googleusercontent.com/kMofEFLjobZy_bCuaiDogzBcUT-dz3BBbOrIEjJ-hqOabjK8ieuevGe6wlTD15QzOqw=w600-h300-pc0xffffff-pd" alt="LinkedIn"> LinkedIn
+                    </a>
+                    <a href="https://rmit.careercentre.me/members" target="_blank">
+                        <img src="https://sites.rmit.edu.au/artschoolgraduates/files/2022/10/rmit-logo-red.png" alt="RMIT"> RMIT Career Hub
+                    </a>
+                    <a href="https://www.autodesk.com/education/edu-software/overview" target="_blank">
+                        <img src="https://brand.autodesk.com/app/uploads/2021/04/symbol-1.svg" alt="Autodesk"> Autodesk
+                    </a>
+                    <a href="https://www.adobe.com/au/" target="_blank">
+                        <img src="https://companieslogo.com/img/orig/ADBE-fb158b30.png?t=1720244490" alt="Adobe"> Adobe
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="upcoming-dates"></div> <!-- This div will display upcoming dates -->
+
+    <script>
+        async function fetchUpcomingDates() {
+            try {
+                const response = await fetch('https://raw.githubusercontent.com/JoshMVBC/StudentLinks/main/calendar.ics');
+
+                if (!response.ok) {
+                    console.error('Network response was not ok:', response.statusText);
+                    throw new Error('Network response was not ok');
+                }
+
+                const text = await response.text();
+                const jcalData = ICAL.parse(text);
+                const comp = new ICAL.Component(jcalData);
+                const events = comp.getAllProperties('vevent');
+
+                // Get the current date
+                const now = new Date();
+                let upcomingEvents = [];
+
+                // Filter for upcoming events
+                events.forEach(event => {
+                    const startDate = event.getFirstPropertyValue('dtstart').toJSDate();
+                    if (startDate > now) {
+                        const summary = event.getFirstPropertyValue('summary');
+                        upcomingEvents.push({ summary, startDate });
+                    }
+                });
+
+                // Sort upcoming events by date
+                upcomingEvents.sort((a, b) => a.startDate - b.startDate);
+
+                // Display upcoming events
+                let eventsHtml = '<h2>Upcoming Dates</h2><ul>';
+                upcomingEvents.forEach(event => {
+                    const dateStr = event.startDate.toLocaleDateString();
+                    eventsHtml += `<li>${event.summary} - ${dateStr}</li>`;
+                });
+                eventsHtml += '</ul>';
+
+                document.getElementById('upcoming-dates').innerHTML = eventsHtml;
+            } catch (error) {
+                console.error('Error fetching or parsing calendar:', error);
+                document.getElementById('upcoming-dates').innerHTML = '<p>Error loading upcoming dates. Please try again later.</p>';
+            }
+        }
+
+        // Call the function to fetch upcoming dates
+        fetchUpcomingDates();
+    </script>
+</body>
+
+</html>
