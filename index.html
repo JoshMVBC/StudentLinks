@@ -67,49 +67,45 @@
 
     <script>
         async function fetchUpcomingDates() {
-            try {
-                const response = await fetch('https://raw.githubusercontent.com/JoshMVBC/StudentLinks/main/calendar.ics');
+    try {
+        const response = await fetch('https://joshmvbc.github.io/StudentLinks/calendar.ics');
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const text = await response.text();
+        const jcalData = ICAL.parse(text);
+        const comp = new ICAL.Component(jcalData);
+        const events = comp.getAllProperties('vevent');
 
-                if (!response.ok) {
-                    console.error('Network response was not ok:', response.statusText);
-                    throw new Error('Network response was not ok');
-                }
+        // Get the current date
+        const now = new Date();
+        let upcomingEvents = [];
 
-                const text = await response.text();
-                const jcalData = ICAL.parse(text);
-                const comp = new ICAL.Component(jcalData);
-                const events = comp.getAllProperties('vevent');
-
-                // Get the current date
-                const now = new Date();
-                let upcomingEvents = [];
-
-                // Filter for upcoming events
-                events.forEach(event => {
-                    const startDate = event.getFirstPropertyValue('dtstart').toJSDate();
-                    if (startDate > now) {
-                        const summary = event.getFirstPropertyValue('summary');
-                        upcomingEvents.push({ summary, startDate });
-                    }
-                });
-
-                // Sort upcoming events by date
-                upcomingEvents.sort((a, b) => a.startDate - b.startDate);
-
-                // Display upcoming events
-                let eventsHtml = '<h2>Upcoming Dates</h2><ul>';
-                upcomingEvents.forEach(event => {
-                    const dateStr = event.startDate.toLocaleDateString();
-                    eventsHtml += `<li>${event.summary} - ${dateStr}</li>`;
-                });
-                eventsHtml += '</ul>';
-
-                document.getElementById('upcoming-dates').innerHTML = eventsHtml;
-            } catch (error) {
-                console.error('Error fetching or parsing calendar:', error);
-                document.getElementById('upcoming-dates').innerHTML = '<p>Error loading upcoming dates. Please try again later.</p>';
+        // Filter for upcoming events
+        events.forEach(event => {
+            const startDate = event.getFirstPropertyValue('dtstart').toJSDate();
+            if (startDate > now) {
+                const summary = event.getFirstPropertyValue('summary');
+                upcomingEvents.push({ summary, startDate });
             }
-        }
+        });
+
+        // Sort upcoming events by date
+        upcomingEvents.sort((a, b) => a.startDate - b.startDate);
+
+        // Display upcoming events
+        let eventsHtml = '<h2>Upcoming Dates</h2><ul>';
+        upcomingEvents.forEach(event => {
+            const dateStr = event.startDate.toLocaleDateString();
+            eventsHtml += `<li>${event.summary} - ${dateStr}</li>`;
+        });
+        eventsHtml += '</ul>';
+
+        document.getElementById('upcoming-dates').innerHTML = eventsHtml;
+    } catch (error) {
+        console.error('Error fetching or parsing calendar:', error);
+        document.getElementById('upcoming-dates').innerHTML = 'Error fetching or parsing calendar. Please try again later.';
+    }
+}
 
         // Call the function to fetch upcoming dates
         fetchUpcomingDates();
